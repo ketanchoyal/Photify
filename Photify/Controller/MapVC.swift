@@ -9,6 +9,7 @@
 import UIKit
 import MapKit
 import CoreLocation
+import Alamofire
 
 class MapVC: UIViewController, UIGestureRecognizerDelegate {
 
@@ -27,6 +28,8 @@ class MapVC: UIViewController, UIGestureRecognizerDelegate {
     
     var flowLayout = UICollectionViewFlowLayout()
     var collectionView : UICollectionView?
+    
+    var imageUrlArray = [String]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -66,6 +69,24 @@ class MapVC: UIViewController, UIGestureRecognizerDelegate {
         UIView.animate(withDuration: 0.3) {
             self.view.layoutIfNeeded()
             self.mapView.layoutIfNeeded()
+        }
+    }
+    
+    func retriveImageUrl(forAnnotation annotation : DroppablePin, handeler : @escaping(_ status : Bool) -> ()) {
+        imageUrlArray.removeAll()
+
+        Alamofire.request(flickerUrl(forApiKey: API_KEY, withAnnotation: annotation, andNumberOfPhotos: 40)).responseJSON { (response) in
+            
+            guard let json = response.result.value as? Dictionary<String, AnyObject> else { return }
+            let photosDict = json["photos"] as! Dictionary<String, AnyObject>
+            let photosDictArray = photosDict["photo"] as! [Dictionary<String, AnyObject>]
+            
+            for photo in photosDictArray {
+                let photoUrl = "https://farm\(photo["farm"]!).staticflickr.com/\(photo["server"]!)/\(photo["id"]!)_\(photo["secret"]!)_h_d.jpg"
+                
+                self.imageUrlArray.append(photoUrl)
+            }
+            handeler(true)
         }
     }
     
@@ -171,10 +192,14 @@ extension MapVC : MKMapViewDelegate {
         let annotation = DroppablePin(coordinate: touchCordinate, identifier: "droppablePin")
         mapView.addAnnotation(annotation)
         
-        print(flickerUrl(forApiKey: API_KEY, withAnnotation: annotation, andNumberOfPhotos: 40))
-        
         let coordinateRegion = MKCoordinateRegion(center: touchCordinate, latitudinalMeters: regionRadius, longitudinalMeters: regionRadius)
         mapView.setRegion(coordinateRegion, animated: true)
+        
+        retriveImageUrl(forAnnotation: annotation) { (success) in
+            if success {
+                print(self.imageUrlArray)
+            }
+        }
     }
     
     func removeAnnotation() {
