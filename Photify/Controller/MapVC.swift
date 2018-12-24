@@ -16,7 +16,6 @@ class MapVC: UIViewController, UIGestureRecognizerDelegate {
 
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var pullUpViewHeightConstriant: NSLayoutConstraint!
-    @IBOutlet weak var pullUpViewBottomConstraint: NSLayoutConstraint!
     @IBOutlet weak var pullUpView: UIView!
     
     var regionRadius : Double = 1000
@@ -45,7 +44,7 @@ class MapVC: UIViewController, UIGestureRecognizerDelegate {
     
     func addDoubleTap() {
         let doubleTap = UITapGestureRecognizer(target: self, action: #selector(dropPin(sender:)))
-        doubleTap.numberOfTapsRequired = 2
+        doubleTap.numberOfTapsRequired = 3
         doubleTap.delegate = self
         
         mapView.addGestureRecognizer(doubleTap)
@@ -59,25 +58,42 @@ class MapVC: UIViewController, UIGestureRecognizerDelegate {
     
     func animateViewUp() {
         pullUpViewHeightConstriant.constant = view.frame.height * 0.6
+        //pullUpView.frame.size.height = view.frame.height * 0.6
         
-        if UIDevice().userInterfaceIdiom == .phone {
-            let nativeHeight = UIScreen.main.nativeBounds.height
-            if nativeHeight == 2436 || nativeHeight == 2688 || nativeHeight == 1792 {
-                self.pullUpViewBottomConstraint.constant = 35
-            }
-        }
+//        if UIDevice().userInterfaceIdiom == .phone {
+//            let nativeHeight = UIScreen.main.nativeBounds.height
+//            if nativeHeight == 2436 || nativeHeight == 2688 || nativeHeight == 1792 {
+//                self.pullUpViewBottomConstraint.constant = 35
+//            }
+//        }
         //mapView.frame = CGRect(x: 0, y: 0, width: screenSize.width, height: self.view.frame.height - 300)
-        mapView.frame.size.height = view.frame.height * 0.4
+        //mapView.frame.size.height = view.frame.height * 0.4
         UIView.animate(withDuration: 0.3) {
             self.view.layoutIfNeeded()
-            self.mapView.layoutIfNeeded()
+            //self.mapView.layoutIfNeeded()
         }
+    }
+    
+    @objc func animateViewDown() {
+        
+        pullUpViewHeightConstriant.constant = 0
+        //pullUpView.frame.size.height = 0
+        //pullUpViewBottomConstraint.constant = 0
+        
+        UIView.animate(withDuration: 0.4) {
+            //self.mapView.frame.size.height = self.screenSize.height
+            self.view.layoutIfNeeded()
+            //self.mapView.layoutIfNeeded()
+        }
+        cancelAllSessions()
+        self.hideCollectionView()
     }
     
     func retriveImageUrl(forAnnotation annotation : DroppablePin, handeler : @escaping(_ status : Bool) -> ()) {
         Alamofire.request(flickerUrl(forApiKey: API_KEY, withAnnotation: annotation, andNumberOfPhotos: 40)).responseJSON { (response) in
             
             guard let json = response.result.value as? Dictionary<String, AnyObject> else { return }
+            //print(json)
             let photosDict = json["photos"] as! Dictionary<String, AnyObject>
             let photosDictArray = photosDict["photo"] as! [Dictionary<String, AnyObject>]
             
@@ -112,20 +128,6 @@ class MapVC: UIViewController, UIGestureRecognizerDelegate {
         }
     }
     
-    @objc func animateViewDown() {
-        
-        pullUpViewHeightConstriant.constant = 0
-        pullUpViewBottomConstraint.constant = 0
-        
-        UIView.animate(withDuration: 0.4) {
-            self.mapView.frame.size.height = self.screenSize.height
-            self.view.layoutIfNeeded()
-            //self.mapView.layoutIfNeeded()
-        }
-        cancelAllSessions()
-        self.hideCollectionView()
-    }
-    
     func addSpinner() {
         spinner = UIActivityIndicatorView()
         spinner?.center = CGPoint(x: (screenSize.width / 2) - ((spinner?.frame.width)! / 2), y: (pullUpView.frame.height / 2) - ((spinner?.frame.height)!))
@@ -146,11 +148,18 @@ class MapVC: UIViewController, UIGestureRecognizerDelegate {
     }
     
     func addCollectionView() {
+        flowLayout.scrollDirection = .vertical //.horizontal
+        flowLayout.itemSize = CGSize(width:50 , height:50)
+        flowLayout.sectionInset = UIEdgeInsets(top: 1, left: 1, bottom: 1, right: 1)
+        flowLayout.minimumLineSpacing = 1.0
+        flowLayout.minimumInteritemSpacing = 1.0
         collectionView = UICollectionView(frame: pullUpView.bounds, collectionViewLayout: flowLayout)
         collectionView?.register(PhotoCell.self, forCellWithReuseIdentifier: "photoCell")
         collectionView?.delegate = self
         collectionView?.dataSource = self
         collectionView?.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+        
+        //collectionView!.setCollectionViewLayout(flowLayout, animated: true)
         
         pullUpView.addSubview(collectionView!)
     }
@@ -274,5 +283,12 @@ extension MapVC : UICollectionViewDelegate, UICollectionViewDataSource {
         return cell
     }
     
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        
+        guard let popVc = storyboard?.instantiateViewController(withIdentifier: "PopVC") as? PopVC else { return }
+        popVc.initData(forImage: imageArray[indexPath.row])
+        present(popVc, animated: true, completion: nil)
+
+    }
     
 }

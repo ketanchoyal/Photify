@@ -16,6 +16,7 @@
 		977AC07421C2EA7D005F1BED /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 977AC07321C2EA7D005F1BED /* Default-568h@2x.png */; };
 		97CF75AB21CC232A00203AB6 /* PhotoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97CF75AA21CC232A00203AB6 /* PhotoCell.swift */; };
 		97CF75AD21CC332300203AB6 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97CF75AC21CC332300203AB6 /* Constants.swift */; };
+		97E9EC3B21D152B0009D124F /* PopVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97E9EC3A21D152B0009D124F /* PopVC.swift */; };
 		97F50DDC21CB962700E1D408 /* DroppablePin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97F50DDB21CB962700E1D408 /* DroppablePin.swift */; };
 /* End PBXBuildFile section */
 
@@ -32,6 +33,7 @@
 		977AC07321C2EA7D005F1BED /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		97CF75AA21CC232A00203AB6 /* PhotoCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCell.swift; sourceTree = "<group>"; };
 		97CF75AC21CC332300203AB6 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		97E9EC3A21D152B0009D124F /* PopVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopVC.swift; sourceTree = "<group>"; };
 		97F50DDB21CB962700E1D408 /* DroppablePin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DroppablePin.swift; sourceTree = "<group>"; };
 		A448F8DA5C87585C4BD93AA0 /* Pods-Photify.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Photify.release.xcconfig"; path = "Pods/Target Support Files/Pods-Photify/Pods-Photify.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -96,6 +98,7 @@
 			isa = PBXGroup;
 			children = (
 				977AC05D21C2E617005F1BED /* MapVC.swift */,
+				97E9EC3A21D152B0009D124F /* PopVC.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -255,6 +258,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				97E9EC3B21D152B0009D124F /* PopVC.swift in Sources */,
 				97CF75AD21CC332300203AB6 /* Constants.swift in Sources */,
 				97CF75AB21CC232A00203AB6 /* PhotoCell.swift in Sources */,
 				977AC05E21C2E617005F1BED /* MapVC.swift in Sources */,
