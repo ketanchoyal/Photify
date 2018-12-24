@@ -10,6 +10,7 @@ import UIKit
 import MapKit
 import CoreLocation
 import Alamofire
+import AlamofireImage
 
 class MapVC: UIViewController, UIGestureRecognizerDelegate {
 
@@ -30,6 +31,7 @@ class MapVC: UIViewController, UIGestureRecognizerDelegate {
     var collectionView : UICollectionView?
     
     var imageUrlArray = [String]()
+    var imageArray = [UIImage]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -56,7 +58,7 @@ class MapVC: UIViewController, UIGestureRecognizerDelegate {
     }
     
     func animateViewUp() {
-        pullUpViewHeightConstriant.constant = 300
+        pullUpViewHeightConstriant.constant = view.frame.height * 0.6
         
         if UIDevice().userInterfaceIdiom == .phone {
             let nativeHeight = UIScreen.main.nativeBounds.height
@@ -65,7 +67,7 @@ class MapVC: UIViewController, UIGestureRecognizerDelegate {
             }
         }
         //mapView.frame = CGRect(x: 0, y: 0, width: screenSize.width, height: self.view.frame.height - 300)
-        mapView.frame.size.height = view.frame.height - 300
+        mapView.frame.size.height = view.frame.height * 0.4
         UIView.animate(withDuration: 0.3) {
             self.view.layoutIfNeeded()
             self.mapView.layoutIfNeeded()
@@ -90,15 +92,41 @@ class MapVC: UIViewController, UIGestureRecognizerDelegate {
         }
     }
     
+    func retriveImage(handler : @escaping (_ complete : Bool) -> ()) {
+        imageArray.removeAll()
+        for url in imageUrlArray {
+            Alamofire.request(url).responseImage { (response) in
+                guard let image = response.result.value else { return }
+                self.imageArray.append(image)
+                
+                self.progressLabel?.text = "\(self.imageArray.count)/\(self.imageUrlArray.count) Photos Loaded"
+                
+                if self.imageArray.count == self.imageUrlArray.count {
+                    handler(true)
+                }
+            }
+        }
+    }
+    
+    func cancelAllSessions() {
+        Alamofire.SessionManager.default.session.getTasksWithCompletionHandler { (sessionDataTask, uploadTask, downloadTask) in
+            sessionDataTask.forEach({ $0.cancel() })
+            downloadTask.forEach({ $0.cancel() })
+        }
+    }
+    
     @objc func animateViewDown() {
-        self.hideCollectionView()
+        
         pullUpViewHeightConstriant.constant = 0
         pullUpViewBottomConstraint.constant = 0
-        mapView.frame.size.height = screenSize.height
-        UIView.animate(withDuration: 0.3) {
+        
+        UIView.animate(withDuration: 0.4) {
+            self.mapView.frame.size.height = self.screenSize.height
             self.view.layoutIfNeeded()
-            self.mapView.layoutIfNeeded()
+            //self.mapView.layoutIfNeeded()
         }
+        cancelAllSessions()
+        self.hideCollectionView()
     }
     
     func addSpinner() {
@@ -115,8 +143,8 @@ class MapVC: UIViewController, UIGestureRecognizerDelegate {
         progressLabel?.textAlignment = .center
         progressLabel?.frame = CGRect(x: (screenSize.width / 2) - 100, y: (pullUpView.frame.height / 2) - ((spinner?.frame.height)!) + 10, width: 200, height: 40)
         progressLabel?.textColor = #colorLiteral(red: 0.004859850742, green: 0.09608627111, blue: 0.5749928951, alpha: 0.83203125)
-        progressLabel?.font = UIFont(name: "Avenir Next", size: 18)
-        progressLabel?.text = "20/40 Photos Loaded"
+        progressLabel?.font = UIFont(name: "Avenir Next", size: 15)
+        progressLabel?.text = "?/? Photos Loaded"
         collectionView!.addSubview(progressLabel!)
     }
     
@@ -175,12 +203,13 @@ extension MapVC : MKMapViewDelegate {
     }
     
     @objc func dropPin(sender : UITapGestureRecognizer) {
-        //removeCollectionView()
+        cancelAllSessions()
         removeAnnotation()
         removeSpinner()
         removeLabel()
 
         animateViewUp()
+        //animateViewUp()
         addCollectionView()
         addSwipe()
         addSpinner()
@@ -197,7 +226,12 @@ extension MapVC : MKMapViewDelegate {
         
         retriveImageUrl(forAnnotation: annotation) { (success) in
             if success {
-                print(self.imageUrlArray)
+                self.retriveImage(handler: { (success) in
+                    if success {
+                        self.removeLabel()
+                        self.removeSpinner()
+                    }
+                })
             }
         }
     }
@@ -225,7 +259,7 @@ extension MapVC : CLLocationManagerDelegate {
 
 extension MapVC : UICollectionViewDelegate, UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 4
+        return imageArray.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {

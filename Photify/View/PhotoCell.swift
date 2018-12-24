@@ -10,6 +10,17 @@ import UIKit
 
 class PhotoCell: UICollectionViewCell {
     
+    var imageView : UIImage?
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+    }
+    
+    func addImageView() {
+        imageView = UIImage()
+        
+    }
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
     }
